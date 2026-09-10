@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 新增手机移动端适配核心标签 -->
+    <!-- 移动端适配，禁止双击缩放 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BAI营销认证刷题工具</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -15,166 +15,202 @@
         }
         body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #f5f6f7;
-            padding:12px;
-            max-width:1000px;
-            margin:0 auto;
+            background-color: #ffffff;
+            padding: 12px;
+            max-width: 1020px;
+            margin: 0 auto;
         }
-        h1{
-            font-size:1.25rem;
-            margin-bottom:16px;
-            color:#222;
+        h1 {
+            font-size: clamp(1.1rem,3vw,1.3rem);
+            margin-bottom: 18px;
+            color: #111;
         }
-        .drop-area{
-            border:2px dashed #b8c2cc;
-            border-radius:10px;
-            padding:24px 16px;
-            text-align:center;
-            background:#fff;
-            margin-bottom:16px;
+        .drop-area {
+            border: 2px dashed #c5cdd8;
+            border-radius: 16px;
+            padding: clamp(20px,6vw,32px) 16px;
+            text-align: center;
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 16px;
         }
-        .drop-area.active{
-            border-color:#2b7bdd;
-            background:#edf4fc;
+        .drop-area.active {
+            border-color: #2b7bdd;
+            background: #edf4fc;
         }
-        .btn-group{
-            display:flex;
-            gap:8px;
-            flex-wrap:wrap;
-            margin:10px 0;
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 12px 0;
         }
-        button{
-            padding:8px 14px;
-            border:none;
-            border-radius:6px;
-            font-size:14px;
+        button {
+            padding: clamp(8px,2vw,9px) clamp(12px,3vw,16px);
+            border: none;
+            border-radius: 8px;
+            font-size: clamp(13px,2.5vw,14px);
+            cursor: pointer;
+            /*手机增大点击热区 */
+            min-height:40px;
+        }
+        .btn-blue {
+            background: #2b7bdd;
+            color: white;
+        }
+        .btn-gray {
+            background: #949ca6;
+            color: white;
+        }
+        .tip-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 6px;
+            word-break:break-all;
+        }
+        .box-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: clamp(14px,4vw,18px);
+            margin-bottom: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        }
+        .quiz-item {
+            padding: clamp(12px,3vw,14px);
+            border: 1px solid #e8ebf0;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .quiz-item:active {
+            background: #f0f7ff;
+        }
+        /*刷题页面样式，手机适配 */
+        .question-title {
+            font-size: clamp(15px,3vw,17px);
+            font-weight: 500;
+            margin-bottom: 16px;
+            line-height: 1.6;
+            word-break: break‑all;
+        }
+        .option-item {
+            border: 1px solid #dde1e7;
+            border-radius: 10px;
+            padding: clamp(12px,3vw,14px);
+            margin: 10px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
             cursor:pointer;
+            min‑height:44px;
         }
-        .btn-blue{
-            background:#2b7bdd;
-            color:white;
+        .option-item.selected {
+            border‑color: #2b7bdd;
+            background: #edf4fc;
         }
-        .btn-gray{
-            background:#949ca6;
-            color:white;
+        .control‑bar {
+            display: flex;
+            justify‑content: space‑between;
+            flex‑wrap: wrap;
+            gap: 10px;
+            margin: 18px 0;
         }
-        .tip-text{
-            font-size:12px;
-            color:#666;
-            margin-top:6px;
+        .analysis‑block {
+            background: #f7f8fa;
+            padding: clamp(12px,3vw,14px);
+            border‑radius: 10px;
+            margin‑top: 14px;
         }
-        .box-card{
-            background:#fff;
-            border-radius:10px;
-            padding:14px;
-            margin-bottom:12px;
+        .hide {
+            display: none !important;
         }
-        .quiz-item{
-            padding:12px;
-            border:1px solid #e4e7ec;
-            border-radius:8px;
-            margin-bottom:10px;
-            cursor:pointer;
+        /* 答题结果提示块 */
+        .result‑correct {
+            background‑color: #dcfce7;
+            color: #166534;
+            padding: 12px;
+            border‑radius: 10px;
+            margin: 12px 0;
         }
-        .quiz-item:active{
-            background:#f0f7ff;
+        .result‑wrong {
+            background‑color: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border‑radius: 10px;
+            margin: 12px 0;
         }
-        /*刷题页面样式，手机适配*/
-        .question-title{
-            font-size:16px;
-            font-weight:500;
-            margin-bottom:14px;
-            line-height:1.6;
+        /* 进度条样式 */
+        .progress‑wrap {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border‑radius: 999px;
+            overflow: hidden;
+            margin: 8px 0 16px;
         }
-        .option-item{
-            border:1px solid #dde1e7;
-            border-radius:8px;
-            padding:12px;
-            margin:8px 0;
-        }
-        .option-item.selected{
-            border-color:#2b7bdd;
-            background:#edf4fc;
-        }
-        .control-bar{
-            display:flex;
-            justify-content:space-between;
-            flex-wrap:wrap;
-            gap:8px;
-            margin:16px 0;
-        }
-        .analysis-block{
-            background:#f7f8fa;
-            padding:12px;
-            border-radius:8px;
-            margin-top:12px;
-        }
-        .hide{
-            display:none !important;
+        .progress‑bar {
+            height: 100%;
+            background: #2b7bdd;
+            border‑radius: 999px;
         }
     </style>
 </head>
 <body>
-<div id="page-home">
+<div id="page‑home">
     <h1>BAI中级认证刷题工具（Excel拖拽导入）</h1>
-    <div class="drop-area" id="dropZone">
+    <div class="drop‑area" id="dropZone">
         <p>📂 将Excel(.xlsx)拖拽到此区域</p>
-        <p style="font-size:12px;color:#777;margin-top:4px">或者点击下方按钮选择文件</p>
+        <p style="font‑size:12px;color:#777;margin‑top:4px">或者点击下方按钮选择文件</p>
     </div>
-    <div class="btn-group">
-        <button class="btn-blue" id="selectFileBtn">选择Excel文件</button>
-        <button class="btn-gray" id="clearAllBtn">清空全部本地题库</button>
+    <div class="btn‑group">
+        <button class="btn‑blue" id="selectFileBtn">选择Excel文件</button>
+        <button class="btn‑gray" id="clearAllBtn">清空全部本地题库</button>
     </div>
-    <div class="tip-text">Excel表头: 题库名称 | 题型 | 题干 | 选项A | 选项B | 选项C | 选项D | 正确答案 | 解析</div>
-
-    <div class="box-card">
+    <div class="tip‑text">Excel表头: 题库名称 | 题型 | 题干 | 选项A | 选项B | 选项C | 选项D | 正确答案 | 解析</div>
+    <div class="box‑card">
         <div><b>已导入题库列表（点击开始刷题）</b></div>
-        <div style="font-size:12px;color:#777;margin-bottom:8px">暂无题库，请拖拽/选择Excel文件导入</div>
+        <div style="font‑size:12px;color:#777;margin‑bottom:8px">暂无题库，请拖拽/选择Excel文件导入</div>
         <div id="libList"></div>
     </div>
 </div>
-
-<div id="page-quiz" class="hide">
-    <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+<div id="page‑quiz" class="hide">
+    <div style="display:flex;justify‑content:space‑between;margin‑bottom:10px">
         <span id="libNameShow"></span>
         <span id="countShow"></span>
     </div>
-    <div id="questionBox">
-        <div class="question-title" id="qTitle"></div>
-        <div id="optionWrap"></div>
-        <div class="control-bar">
-            <button class="btn-gray" id="prevBtn">上一题</button>
-            <button class="btn-blue" id="submitBtn">提交答案</button>
-            <button class="btn-gray" id="nextBtn">下一题</button>
-        </div>
-        <div id="ansAnalysis" class="analysis-block hide"></div>
+    <!-- 进度条 -->
+    <div class="progress‑wrap">
+        <div class="progress‑bar" id="progressBar" style="width:0%"></div>
     </div>
-    <div style="margin-top:20px">
-        <button class="btn-gray" id="backHomeBtn">返回题库列表</button>
+    <div id="questionBox" class="box‑card">
+        <div class="question‑title" id="qTitle"></div>
+        <div id="optionWrap"></div>
+        <div class="control‑bar">
+            <button class="btn‑gray" id="prevBtn">上一题</button>
+            <button class="btn‑blue" id="submitBtn">提交答案</button>
+            <button class="btn‑gray" id="nextBtn">下一题</button>
+        </div>
+        <div id="ansAnalysis" class="analysis‑block hide"></div>
+    </div>
+    <div style="margin‑top:20px">
+        <button class="btn‑gray" id="backHomeBtn">返回题库列表</button>
     </div>
 </div>
-
 <input type="file" id="fileInput" accept=".xlsx,.xls" hidden>
-
 <script>
 // 本地存储key
 const STORAGE_KEY = "bai_quiz_libs";
 let currentLib = null;
 let currentIndex = 0;
 let quizData = [];
-
 // dom
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
 const selectFileBtn = document.getElementById('selectFileBtn');
 const libListDom = document.getElementById('libList');
 const clearAllBtn = document.getElementById('clearAllBtn');
-const pageHome = document.getElementById("page-home");
-const pageQuiz = document.getElementById("page-quiz");
-
+const pageHome = document.getElementById("page‑home");
+const pageQuiz = document.getElementById("page‑quiz");
 // 初始化渲染题库列表
 renderLibList();
-
 //拖拽
 dropZone.addEventListener('dragover',e=>{
     e.preventDefault();
@@ -195,7 +231,6 @@ fileInput.onchange = (e)=>{
     if(f) handleExcelFile(f);
     fileInput.value = "";
 }
-
 //解析excel
 function handleExcelFile(file){
     const reader = new FileReader();
@@ -248,31 +283,28 @@ function handleExcelFile(file){
     }
     reader.readAsArrayBuffer(file);
 }
-
 //渲染题库列表
 function renderLibList(){
     const libs = JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
     libListDom.innerHTML = '';
     if(libs.length===0){
-        libListDom.innerHTML = `<div style="color:#777;font-size:12px">暂无题库，请拖拽/选择Excel文件导入</div>`;
+        libListDom.innerHTML = `<div style="color:#777;font‑size:12px">暂无题库，请拖拽/选择Excel文件导入</div>`;
         return;
     }
     libs.forEach(lib=>{
         const div = document.createElement('div');
-        div.className = "quiz-item";
+        div.className = "quiz‑item";
         div.innerHTML = `<div><b>${lib.name}</b> <span style="color:#666">共${lib.list.length}题</span></div>`;
         div.onclick = ()=> startQuiz(lib);
         libListDom.appendChild(div);
     })
 }
-
 clearAllBtn.onclick = ()=>{
     if(confirm("确认清空全部本地题库？")){
         localStorage.removeItem(STORAGE_KEY);
         renderLibList();
     }
 }
-
 //开始刷题
 function startQuiz(libObj){
     currentLib = libObj;
@@ -283,10 +315,13 @@ function startQuiz(libObj){
     document.getElementById('libNameShow').innerText = libObj.name;
     renderQuestion();
 }
-
 function renderQuestion(){
     const item = quizData[currentIndex];
     document.getElementById('countShow').innerText = `${currentIndex+1}/${quizData.length}`;
+    //更新进度条百分比
+    const percent = ((currentIndex+1)/quizData.length)*100;
+    document.getElementById("progressBar").style.width = `${percent}%`;
+
     document.getElementById('qTitle').innerText = `【${item.题型}】${item.题干}`;
     const wrap = document.getElementById('optionWrap');
     wrap.innerHTML = '';
@@ -294,7 +329,7 @@ function renderQuestion(){
         const val = item[`选项${lab}`];
         if(!val) return;
         const div = document.createElement('div');
-        div.className = "option-item";
+        div.className = "option‑item";
         div.innerText = `${lab}. ${val}`;
         div.dataset.label = lab;
         div.onclick = ()=>{
@@ -304,32 +339,31 @@ function renderQuestion(){
     })
     document.getElementById("ansAnalysis").classList.add("hide");
 }
-
 document.getElementById("prevBtn").onclick = ()=>{
     if(currentIndex>0){
-        currentIndex--;
+        currentIndex‑‑;
         renderQuestion();
     }
 }
 document.getElementById("nextBtn").onclick = ()=>{
-    if(currentIndex < quizData.length-1){
+    if(currentIndex < quizData.length‑1){
         currentIndex++;
         renderQuestion();
     }
 }
 document.getElementById("submitBtn").onclick = function(){
-    const sel = Array.from(document.querySelectorAll(".option-item.selected")).map(d=>d.dataset.label).sort().join("");
+    const sel = Array.from(document.querySelectorAll(".option‑item.selected")).map(d=>d.dataset.label).sort().join("");
     const realAns = quizData[currentIndex]["正确答案"].trim();
     const analysisDom = document.getElementById("ansAnalysis");
     analysisDom.classList.remove("hide");
-    let resText = "";
+    let resHtml = "";
     if(sel === realAns){
-        resText = "✅回答正确";
+        resHtml = `<div class="result‑correct">✅回答正确！</div>`;
     }else{
-        resText = `❌回答错误，正确答案：${realAns}`;
+        resHtml = `<div class="result‑wrong">❌回答错误，正确答案：${realAns}</div>`;
     }
     const jx = quizData[currentIndex]["解析"] || "无解析";
-    analysisDom.innerHTML = `<div>${resText}</div><div style="margin-top:8px">解析：${jx}</div>`;
+    analysisDom.innerHTML = `${resHtml}<div style="margin‑top:8px">解析：${jx}</div>`;
 }
 document.getElementById("backHomeBtn").onclick = ()=>{
     pageQuiz.classList.add("hide");
