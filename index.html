@@ -111,7 +111,7 @@
             margin: 18px 0;
         }
         .analysis-block {
-            background: #f7f8fa;
+            background: #ffffff;
             padding: clamp(12px,3vw,14px);
             border-radius: 10px;
             margin-top: 14px;
@@ -122,54 +122,100 @@
         .result-correct {
             background-color: #dcfce7;
             color: #166534;
-            padding: 12px;
-            border-radius: 10px;
-            margin: 12px 0;
+            padding:12px;
+            border-radius:10px;
+            margin:12px 0;
         }
         .result-wrong {
             background-color: #fee2e2;
             color: #991b1b;
-            padding: 12px;
-            border-radius: 10px;
-            margin: 12px 0;
+            padding:12px;
+            border-radius:10px;
+            margin:12px 0;
         }
         .progress-wrap {
-            width: 100%;
-            height: 8px;
-            background: #e5e7eb;
-            border-radius: 999px;
-            overflow: hidden;
-            margin: 8px 0 16px;
+            width:100%;
+            height:8px;
+            background:#e5e7eb;
+            border-radius:999px;
+            overflow:hidden;
+            margin:8px 0 16px;
         }
-        .progress-bar {
-            height: 100%;
-            background: #2b7bdd;
-            border-radius: 999px;
+        .progress-bar{
+            height:100%;
+            background:#2b7bdd;
+            border-radius:999px;
+        }
+        .top-info-row{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:10px;
+            flex-wrap:wrap;
+            gap:8px;
+        }
+        .num-type-text{
+            font-size:15px;
+            color:#333;
+        }
+        .lib-header-card{
+            background:#fff;
+            border-radius:16px;
+            padding:14px 18px;
+            box-shadow:0 2px 10px rgba(0,0,0,0.06);
+            margin-bottom:14px;
+        }
+        .overview-grid{
+            display:grid;
+            grid-template-columns: repeat(auto-fill, minmax(44px,1fr));
+            gap:8px;
+            margin-top:12px;
+        }
+        .overview-item{
+            padding:8px;
+            text-align:center;
+            border-radius:6px;
+            cursor:pointer;
+            border:1px solid #e4e7ec;
+        }
+        .overview-right{
+            background:#dcfce7;
+        }
+        .overview-wrong{
+            background:#fee2e2;
+        }
+        .overview-empty{
+            background:#fef9c3;
         }
     </style>
 </head>
 <body>
-<div id="page-home">
-    <h1>BAI中级认证刷题工具（Excel拖拽导入）</h1>
-    <div class="drop-area" id="dropZone">
-        <p>📂 将Excel(.xlsx)拖拽到此区域</p>
-        <p style="font-size:12px;color:#777;margin-top:4px">或者点击下方按钮选择文件</p>
-    </div>
-    <div class="btn-group">
-        <button class="btn-blue" id="selectFileBtn">选择Excel文件</button>
-        <button class="btn-gray" id="clearAllBtn">清空全部本地题库</button>
-    </div>
-    <div class="tip-text">Excel表头: 题库名称 | 题型 | 题干 | 选项A | 选项B | 选项C | 选项D | 正确答案 | 解析</div>
-    <div class="box-card">
-        <div><b>已导入题库列表（点击开始刷题）</b></div>
-        <div style="font-size:12px;color:#777;margin-bottom:8px">暂无题库，请拖拽/选择Excel文件导入</div>
-        <div id="libList"></div>
-    </div>
+<h1>BAI中级认证刷题工具（Excel拖拽导入）</h1>
+<div class="drop-area" id="dropZone">
+    <p>📂 将Excel(.xlsx)拖拽到此区域</p>
+    <p style="font-size:12px;color:#777;margin-top:4px">或者点击下方按钮选择文件</p>
 </div>
-<div id="page-quiz" class="hide">
-    <div style="display:flex;justify-content:space-between;margin-bottom:10px">
-        <span id="libNameShow"></span>
-        <span id="countShow"></span>
+<div class="btn-group">
+    <button class="btn-blue" id="selectFileBtn">选择Excel文件</button>
+    <button class="btn-gray" id="clearAllBtn">清空全部本地题库</button>
+</div>
+<div class="tip-text">Excel表头: 题库名称 | 题型 | 题干 | 选项A | 选项B | 选项C | 选项D | 正确答案 | 解析</div>
+
+<!-- 题库列表区域 -->
+<div class="box-card" id="libListWrap">
+    <div><b>已导入题库列表（点击开始刷题）</b></div>
+    <div style="font-size:12px;color:#777;margin-bottom:8px">暂无题库，请拖拽/选择Excel文件导入</div>
+    <div id="libList"></div>
+</div>
+
+<!-- 刷题区域，和首页同页面，点击题库后显示 -->
+<div id="quizWrap" class="hide">
+    <div class="lib-header-card">
+        <div id="libHeadText"></div>
+    </div>
+    <div class="top-info-row">
+        <div class="num-type-text" id="numTypeShow"></div>
+        <div id="timerShow">计时：00:00</div>
     </div>
     <div class="progress-wrap">
         <div class="progress-bar" id="progressBar" style="width:0%"></div>
@@ -184,23 +230,55 @@
         </div>
         <div id="ansAnalysis" class="analysis-block hide"></div>
     </div>
-    <div style="margin-top:20px">
-        <button class="btn-gray" id="backHomeBtn">返回题库列表</button>
+    <div class="btn-group" style="margin-top:16px">
+        <button class="btn-gray" id="overviewBtn">答题概览检查页</button>
+        <button class="btn-blue" id="submitAllBtn">提交答卷</button>
+        <button class="btn-gray" id="backLibListBtn">返回题库列表</button>
     </div>
 </div>
+
+<!-- 答题概览 -->
+<div id="overviewWrap" class="hide">
+    <div class="box-card">
+        <h3>答题概览</h3>
+        <p style="margin:8px 0">✅已答正确：绿色；❌已答错误：红色；🟡未作答：黄色。点击题号跳转题目</p>
+        <div class="overview-grid" id="overviewGrid"></div>
+        <div class="btn-group" style="margin-top:16px">
+            <button class="btn-blue" id="backQuizBtn">返回刷题</button>
+            <button class="btn-blue" id="goResultBtn">提交答卷，查看成绩</button>
+        </div>
+    </div>
+</div>
+
+<!-- 成绩结算 -->
+<div id="resultWrap" class="hide">
+    <div class="box-card">
+        <h2>答卷成绩</h2>
+        <div id="resultText" style="margin:16px 0;line-height:2;"></div>
+        <button class="btn-blue" id="backHomeFromResult">返回题库首页</button>
+    </div>
+</div>
+
 <input type="file" id="fileInput" accept=".xlsx,.xls" hidden>
 <script>
 const STORAGE_KEY = "bai_quiz_libs";
 let currentLib = null;
 let currentIndex = 0;
 let quizData = [];
+let answerRecords = [];
+let timer = null;
+let startTime = null;
+
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
 const selectFileBtn = document.getElementById('selectFileBtn');
 const libListDom = document.getElementById('libList');
 const clearAllBtn = document.getElementById('clearAllBtn');
-const pageHome = document.getElementById("page-home");
-const pageQuiz = document.getElementById("page-quiz");
+const libListWrap = document.getElementById("libListWrap");
+const quizWrap = document.getElementById("quizWrap");
+const overviewWrap = document.getElementById("overviewWrap");
+const resultWrap = document.getElementById("resultWrap");
+
 renderLibList();
 
 dropZone.addEventListener('dragover',e=>{
@@ -280,10 +358,16 @@ function renderLibList(){
         return;
     }
     libs.forEach(lib=>{
+        // 计算单选、多选题数量
+        let singleCnt = 0, multiCnt=0;
+        lib.list.forEach(q=>{
+            if(q.题型.includes("单选")) singleCnt++;
+            if(q.题型.includes("多选")) multiCnt++;
+        })
         const div = document.createElement('div');
         div.className = "quiz-item";
-        div.innerHTML = `<div><b>${lib.name}</b> <span style="color:#666">共${lib.list.length}题</span></div>`;
-        div.onclick = ()=> startQuiz(lib);
+        div.innerHTML = `<div><b>${lib.name}</b> <span style="color:#666">共${lib.list.length}题｜单选${singleCnt}｜多选${multiCnt}</span></div>`;
+        div.onclick = ()=> startQuiz(lib, singleCnt, multiCnt);
         libListDom.appendChild(div);
     })
 }
@@ -295,23 +379,39 @@ clearAllBtn.onclick = ()=>{
     }
 }
 
-function startQuiz(libObj){
+//原地开启刷题，不新开页面
+function startQuiz(libObj, singleCnt, multiCnt){
     currentLib = libObj;
     quizData = libObj.list;
     currentIndex = 0;
-    pageHome.classList.add('hide');
-    pageQuiz.classList.remove('hide');
-    document.getElementById('libNameShow').innerText = libObj.name;
+    answerRecords = quizData.map(()=>{return {selected:"", isRight:null};});
+
+    document.getElementById("libHeadText").innerText = `${libObj.name} | 总${quizData.length}题 | 单选${singleCnt} | 多选${multiCnt}`;
+    //切换显示区域，全部在首页
+    libListWrap.classList.add('hide');
+    quizWrap.classList.remove('hide');
+    overviewWrap.classList.add('hide');
+    resultWrap.classList.add('hide');
+
+    startTime = Date.now();
+    if(timer) clearInterval(timer);
+    timer = setInterval(updateTimer, 1000);
     renderQuestion();
+}
+function updateTimer(){
+    const diff = Math.floor((Date.now() - startTime)/1000);
+    const m = String(Math.floor(diff/60)).padStart(2,"0");
+    const s = String(diff%60).padStart(2,"0");
+    document.getElementById("timerShow").innerText = `计时：${m}:${s}`;
 }
 
 function renderQuestion(){
     const item = quizData[currentIndex];
-    document.getElementById('countShow').innerText = `${currentIndex+1}/${quizData.length}`;
+    const rec = answerRecords[currentIndex];
+    document.getElementById('numTypeShow').innerText = `${currentIndex+1} / ${quizData.length} | 题型：${item.题型}`;
     const percent = ((currentIndex+1)/quizData.length)*100;
     document.getElementById("progressBar").style.width = `${percent}%`;
-
-    document.getElementById('qTitle').innerText = `【${item.题型}】${item.题干}`;
+    document.getElementById('qTitle').innerText = item.题干;
     const wrap = document.getElementById('optionWrap');
     wrap.innerHTML = '';
     ["A","B","C","D"].forEach(lab=>{
@@ -319,10 +419,22 @@ function renderQuestion(){
         if(!val) return;
         const div = document.createElement('div');
         div.className = "option-item";
+        if(rec.selected.includes(lab)) div.classList.add("selected");
         div.innerText = `${lab}. ${val}`;
         div.dataset.label = lab;
         div.onclick = ()=>{
-            div.classList.toggle("selected");
+            if(item.题型.includes("多选")){
+                if(rec.selected.includes(lab)){
+                    rec.selected = rec.selected.split("").filter(x=>x!==lab).sort().join("");
+                }else{
+                    let arr = rec.selected.split("");
+                    arr.push(lab);
+                    rec.selected = arr.sort().join("");
+                }
+            }else{
+                rec.selected = lab;
+            }
+            renderQuestion();
         }
         wrap.appendChild(div);
     })
@@ -342,22 +454,92 @@ document.getElementById("nextBtn").onclick = ()=>{
     }
 }
 document.getElementById("submitBtn").onclick = function(){
-    const sel = Array.from(document.querySelectorAll(".option-item.selected")).map(d=>d.dataset.label).sort().join("");
+    const rec = answerRecords[currentIndex];
+    const sel = rec.selected;
     const realAns = quizData[currentIndex]["正确答案"].trim();
     const analysisDom = document.getElementById("ansAnalysis");
     analysisDom.classList.remove("hide");
     let resHtml = "";
     if(sel === realAns){
+        rec.isRight = true;
         resHtml = `<div class="result-correct">✅回答正确！</div>`;
     }else{
+        rec.isRight = false;
         resHtml = `<div class="result-wrong">❌回答错误，正确答案：${realAns}</div>`;
     }
     const jx = quizData[currentIndex]["解析"] || "无解析";
     analysisDom.innerHTML = `${resHtml}<div style="margin-top:8px">解析：${jx}</div>`;
 }
-document.getElementById("backHomeBtn").onclick = ()=>{
-    pageQuiz.classList.add("hide");
-    pageHome.classList.remove("hide");
+
+//概览页
+document.getElementById("overviewBtn").onclick = ()=>{
+    quizWrap.classList.add("hide");
+    overviewWrap.classList.remove("hide");
+    renderOverview();
+}
+function renderOverview(){
+    const gridDom = document.getElementById("overviewGrid");
+    gridDom.innerHTML = "";
+    quizData.forEach((item,idx)=>{
+        const rec = answerRecords[idx];
+        const div = document.createElement("div");
+        div.className = "overview-item";
+        div.innerText = idx+1;
+        if(rec.isRight === true) div.classList.add("overview-right");
+        else if(rec.isRight === false) div.classList.add("overview-wrong");
+        else div.classList.add("overview-empty");
+        div.onclick = ()=>{
+            currentIndex = idx;
+            overviewWrap.classList.add("hide");
+            quizWrap.classList.remove("hide");
+            renderQuestion();
+        }
+        gridDom.appendChild(div);
+    })
+}
+document.getElementById("backQuizBtn").onclick = ()=>{
+    overviewWrap.classList.add("hide");
+    quizWrap.classList.remove("hide");
+}
+document.getElementById("goResultBtn").onclick = calcResult;
+document.getElementById("submitAllBtn").onclick = calcResult;
+
+//结算成绩
+function calcResult(){
+    clearInterval(timer);
+    const totalSec = Math.floor((Date.now() - startTime)/1000);
+    const m = String(Math.floor(totalSec/60)).padStart(2,"0");
+    const s = String(totalSec%60).padStart(2,"0");
+    let right=0,wrong=0,empty=0;
+    answerRecords.forEach(r=>{
+        if(r.isRight===true) right++;
+        else if(r.isRight===false) wrong++;
+        else empty++;
+    })
+    const total = quizData.length;
+    const rate = ((right/total)*100).toFixed(1);
+    document.getElementById("resultText").innerHTML = `
+总分：${right} / ${total} 分<br>
+✅答对：${right} 题<br>
+❌答错：${wrong} 题<br>
+🟡未作答：${empty} 题<br>
+正确率：${rate}%<br>
+总耗时：${m}分${s}秒
+    `;
+    quizWrap.classList.add("hide");
+    overviewWrap.classList.add("hide");
+    resultWrap.classList.remove("hide");
+}
+
+//返回题库列表（首页）
+document.getElementById("backLibListBtn").onclick = backToLibList;
+document.getElementById("backHomeFromResult").onclick = backToLibList;
+function backToLibList(){
+    if(timer) clearInterval(timer);
+    quizWrap.classList.add("hide");
+    overviewWrap.classList.add("hide");
+    resultWrap.classList.add("hide");
+    libListWrap.classList.remove("hide");
 }
 </script>
 </body>
