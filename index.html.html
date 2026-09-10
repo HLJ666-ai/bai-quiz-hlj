@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>BAI中级认证刷题器｜Excel拖拽导入</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;font-family:system-ui, -apple-system, sans-serif;margin:0;padding:0}
+body{background:#f5f7fa;padding:20px;max-width:920px;margin:0 auto}
+h2{margin-bottom:16px;color:#222}
+.card{background:#fff;border-radius:12px;padding:22px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,0.08)}
+.drop-area{border:2px dashed #b8c8e8;border-radius:10px;padding:32px;text-align:center;margin-bottom:12px;transition:0.2s}
+.drop-area.active{border-color:#2b7bdd;background:#e8f1ff}
+.operate{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+button{padding:9px 16px;border:none;border-radius:8px;background:#2b7bdd;color:#fff;cursor:pointer;font-size:14px}
+button.secondary{background:#868e96}
+button:disabled{background:#ced4da;cursor:not-allowed}
+.progress-wrap{height:11px;background:#e9ecef;border-radius:999px;margin:14px 0;overflow:hidden}
+.progress-bar{height:100%;background:#2b7bdd;transition:width 0.35s;width:0%}
+.question-index{color:#555;margin-bottom:6px}
+.question-title{font-size:18px;margin:16px 0;font-weight:500;line-height:1.6}
+.option-item{padding:13px 14px;border:1px #dee2e6 solid;border-radius:9px;margin:9px 0;cursor:pointer;user-select:none}
+.option-item:hover{border-color:#2b7bdd;background:#f0f6ff}
+.option-item.selected{border-color:#2b7bdd;background:#d7e8fc}
+.option-item.right{background:#dcfce7;border-color:#22c55e}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444}
+.result-tip{padding:12px;border-radius:8px;margin-top:12px;display:none}
+.result-tip.correct{background:#dcfce7;color:#166534}
+.result-tip.error{background:#fee2e2;color:#991b1b}
+.explain{margin-top:10px;padding:12px;background:#f8f9fa;border-radius:8px;color:#333;line-height:1.6}
+.bank-item{padding:7px 8px;border-radius:6px;cursor:pointer;margin:4px 0}
+.bank-item:hover{background:#e9f1fc}
+#file-input{display:none}
+.hint-text{color:#666;font-size:13px;margin-top:8px}
+
+/* 概览检查页样式 */
+#reviewWrap{display:none}
+.review-item{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:6px;margin:6px 0;cursor:pointer}
+.review-item.green{background:#dcfce7}
+.review-item.red{background:#fee2e2}
+.review-item.yellow{background:#fff9c4}
+.review-item:hover{opacity:0.85}
+
+/* 结算页 */
+#scoreWrap{display:none}
+.score-info{font-size:17px;line-height:2;padding:10px 0}
+</style>
+</head>
+<body>
+<h2>BAI中级认证刷题工具（Excel拖拽导入）</h2>
+
+<div class="card">
+  <div id="dropZone" class="drop-area">
+    <div>📂 将Excel(.xlsx)拖拽到此区域</div>
+    <div class="hint-text">或者点击下方按钮选择文件</div>
+  </div>
+  <div class="operate">
+    <button id="selectFileBtn">选择Excel文件</button>
+    <button id="clearAllBank" class="secondary">清空全部本地题库</button>
+    <input type="file" id="file-input" accept=".xlsx">
+  </div>
+  <div class="hint-text">Excel表头：题库名称｜题型｜题干｜选项A｜选项B｜选项C｜选项D｜正确答案｜解析</div>
+</div>
+
+<div class="card">
+  <h4>已导入题库列表（点击开始刷题）</h4>
+  <div id="bankListBox"></div>
+</div>
+
+<!-- 刷题页面 -->
+<div id="quizWrap" class="card" style="display:none">
+  <div class="question-index">
+    <span id="currNo">0</span> / <span id="totalNo">0</span>
+    &nbsp;&nbsp;｜&nbsp;&nbsp;题型：<span id="qType"></span>
+    &nbsp;&nbsp;｜&nbsp;&nbsp;用时：<span id="timerText">00:00</span>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  <div class="question-title" id="qTitle"></div>
+  <div id="optionBox"></div>
+
+  <div class="result-tip" id="resultTip"></div>
+  <div class="explain" id="explainBox"></div>
+
+  <div class="operate" style="margin-top:20px">
+    <button id="prevBtn">上一题</button>
+    <button id="confirmBtn">确认作答</button>
+    <button id="nextBtn">下一题</button>
+    <button id="gotoReviewBtn" class="secondary">提交答卷（进入检查页）</button>
+  </div>
+</div>
+
+<!-- 答题检查概览页 -->
+<div id="reviewWrap" class="card" style="display:none">
+  <h3>📋 答题检查页面</h3>
+  <div class="hint-text">🟢绿色=答对，🔴红色=答错，🟡黄色=未作答(漏选)。点击题目可跳转回去补做</div>
+  <div id="reviewListBox" style="margin:14px 0;max-height:450px;overflow:auto"></div>
+  <div class="operate">
+    <button id="backQuizBtn">返回继续答题</button>
+    <button id="finalSubmitBtn" class="secondary">最终提交，查看成绩</button>
+  </div>
+</div>
+
+<!-- 成绩结算页 -->
+<div id="scoreWrap" class="card" style="display:none">
+  <h3>🏁 答卷结算</h3>
+  <div class="score-info" id="scoreInfoBox"></div>
+  <div class="operate">
+    <button id="restartBankBtn">重新刷本题库</button>
+    <button id="backHomeBtn" class="secondary">返回题库列表</button>
+  </div>
+</div>
+
+<script>
+let bankList = JSON.parse(localStorage.getItem('baiQuizBank') || '[]');
+let activeBank = null;
+let currentIdx = 0;
+let userSelectOpts = [];
+let answeredFlag = false;
+let answerRecord = []; // 存储每一题作答记录：{userAns, isCorrect}
+let timerStart = null;
+let timerInterval = null;
+
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('file-input');
+const selectFileBtn = document.getElementById('selectFileBtn');
+
+dropZone.addEventListener('dragover',(e)=>{e.preventDefault();dropZone.classList.add('active')})
+dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('active'))
+dropZone.addEventListener('drop',(e)=>{
+  e.preventDefault();dropZone.classList.remove('active');
+  if(e.dataTransfer.files.length>0) handleFile(e.dataTransfer.files[0])
+})
+selectFileBtn.onclick = ()=>fileInput.click();
+fileInput.onchange = (ev)=>{
+  if(ev.target.files[0]) handleFile(ev.target.files[0]);
+  fileInput.value='';
+}
+
+//解析Excel
+async function handleFile(file){
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf);
+  const sheet = wb.Sheets[wb.SheetNames[0]];
+  const json = XLSX.utils.sheet_to_json(sheet);
+  if(!json || json.length===0){alert('Excel读取为空，请检查表头与内容');return}
+
+  let bankName = json[0]['题库名称'] || '未命名题库';
+  const questions = [];
+  let cntSingle=0,cntMulti=0;
+  for(const row of json){
+    const qType = String(row['题型']||'').trim();
+    const title = String(row['题干']||'').trim();
+    const optA = String(row['选项A']||'').trim();
+    const optB = String(row['选项B']||'').trim();
+    const optC = String(row['选项C']||'').trim();
+    const optD = String(row['选项D']||'').trim();
+    const ansRaw = String(row['正确答案']||'').trim().toUpperCase();
+    const explain = String(row['解析']||'').trim();
+    if(!title) continue;
+    const optsArr = [optA,optB,optC,optD].filter(x=>x);
+    if(qType==='单选') cntSingle++;
+    if(qType==='多选') cntMulti++;
+    questions.push({
+      type:qType,
+      title:title,
+      options:optsArr,
+      answer:ansRaw,
+      explain:explain
+    })
+  }
+  if(questions.length===0){alert("没有读取到有效题目");return;}
+  const newBank = {
+    name:bankName,
+    total:questions.length,
+    single:cntSingle,
+    multi:cntMulti,
+    questions:questions
+  }
+  bankList.push(newBank);
+  localStorage.setItem('baiQuizBank',JSON.stringify(bankList));
+  renderBankList();
+  alert(`✅题库导入成功！
+题库名称：${bankName}
+总题数：${newBank.total}
+单选：${cntSingle}
+多选：${cntMulti}
+点击题库条目即可开始刷题`);
+}
+
+//渲染题库列表
+function renderBankList(){
+  const box = document.getElementById('bankListBox');
+  box.innerHTML='';
+  if(bankList.length===0){
+    box.innerHTML='<div class="hint-text">暂无题库，请拖拽/选择Excel文件导入</div>';
+    return;
+  }
+  bankList.forEach((bk,idx)=>{
+    const div = document.createElement('div');
+    div.className="bank-item";
+    div.innerText=`📚 ${bk.name}｜总${bk.total}题｜单选${bk.single}｜多选${bk.multi}`;
+    div.onclick=()=>startQuiz(idx);
+    box.appendChild(div);
+  })
+}
+
+document.getElementById('clearAllBank').onclick=()=>{
+  if(confirm("确认清空全部本地存储的题库？不可恢复！")){
+    bankList=[];localStorage.removeItem('baiQuizBank');
+    renderBankList();
+    document.getElementById('quizWrap').style.display='none';
+  }
+}
+
+//开始刷题，初始化作答记录、计时器
+function startQuiz(bankIndex){
+  activeBank = bankList[bankIndex];
+  currentIdx=0;
+  answeredFlag=false;
+  userSelectOpts=[];
+  answerRecord = activeBank.questions.map(()=> ({userAns:null, isCorrect:null}));
+  document.getElementById('quizWrap').style.display='block';
+  document.getElementById('reviewWrap').style.display='none';
+  document.getElementById('scoreWrap').style.display='none';
+  //启动计时
+  timerStart = Date.now();
+  if(timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(updateTimer, 1000);
+  renderQuestion();
+}
+
+// 更新计时器
+function updateTimer(){
+  const diff = Math.floor((Date.now() - timerStart)/1000);
+  const min = String(Math.floor(diff/60)).padStart(2,'0');
+  const sec = String(diff%60).padStart(2,'0');
+  document.getElementById('timerText').innerText = `${min}:${sec}`;
+}
+
+function renderQuestion(){
+  answeredFlag = false;
+  userSelectOpts = [];
+  document.getElementById('resultTip').style.display='none';
+  document.getElementById('explainBox').style.display='none';
+  const q = activeBank.questions[currentIdx];
+  const rec = answerRecord[currentIdx];
+  document.getElementById('currNo').innerText = currentIdx+1;
+  document.getElementById('totalNo').innerText = activeBank.questions.length;
+  document.getElementById('qType').innerText = q.type;
+  const pct = ((currentIdx+1)/activeBank.questions.length*100).toFixed(1);
+  document.getElementById('progressBar').style.width = pct+'%';
+  document.getElementById('qTitle').innerText = q.title;
+
+  const optBox = document.getElementById('optionBox');
+  optBox.innerHTML='';
+  q.options.forEach((optStr,optIdx)=>{
+    const letter = ['A','B','C','D'][optIdx];
+    const div = document.createElement('div');
+    div.className='option-item';
+    div.dataset.letter = letter;
+    div.innerText = `${letter}. ${optStr}`;
+    //如果之前已经作答过，恢复选中状态
+    if(rec.userAns && rec.userAns.includes(letter)) div.classList.add('selected');
+    div.onclick = ()=>{
+      if(answeredFlag) return;
+      if(q.type==='单选'){
+        userSelectOpts=[letter];
+        document.querySelectorAll('.option-item').forEach(d=>d.classList.remove('selected'));
+        div.classList.add('selected');
+      }else{
+        if(userSelectOpts.includes(letter)){
+          userSelectOpts = userSelectOpts.filter(x=>x!==letter);
+          div.classList.remove('selected');
+        }else{
+          userSelectOpts.push(letter);
+          div.classList.add('selected');
+        }
+      }
+    }
+    optBox.appendChild(div);
+  })
+  //恢复上次选择
+  if(rec.userAns) userSelectOpts = rec.userAns.split('');
+
+  document.getElementById('prevBtn').disabled = currentIdx===0;
+  document.getElementById('nextBtn').disabled = currentIdx >= activeBank.questions.length-1;
+  document.getElementById('confirmBtn').disabled = rec.isCorrect !== null;
+}
+
+//确认作答
+document.getElementById('confirmBtn').onclick = ()=>{
+  if(answeredFlag) return;
+  const q = activeBank.questions[currentIdx];
+  if(userSelectOpts.length===0){alert("请选择选项！");return}
+  answeredFlag=true;
+  document.getElementById('confirmBtn').disabled=true;
+
+  const userAns = userSelectOpts.sort().join('');
+  const rightAns = q.answer.split('').sort().join('');
+  const isOk = userAns === rightAns;
+  //保存作答记录
+  answerRecord[currentIdx] = {userAns:userAns, isCorrect:isOk};
+
+  const tipDom = document.getElementById('resultTip');
+  const expDom = document.getElementById('explainBox');
+  expDom.innerText = `✅正确答案：${q.answer}\n解析：${q.explain||"无解析"}`;
+  expDom.style.display='block';
+
+  if(isOk){
+    tipDom.className='result-tip correct';
+    tipDom.innerText = "🎉回答正确！";
+  }else{
+    tipDom.className='result-tip error';
+    tipDom.innerText = "❌回答错误，请查看下方正确答案与解析";
+  }
+  tipDom.style.display='block';
+}
+
+document.getElementById('prevBtn').onclick=()=>{
+  if(currentIdx>0){currentIdx--;renderQuestion()}
+}
+document.getElementById('nextBtn').onclick=()=>{
+  if(currentIdx<activeBank.questions.length-1){currentIdx++;renderQuestion()}
+}
+
+//打开答题概览检查页
+document.getElementById('gotoReviewBtn').onclick = ()=>{
+  document.getElementById('quizWrap').style.display='none';
+  document.getElementById('reviewWrap').style.display='block';
+  renderReviewPage();
+}
+
+//渲染检查概览页面
+function renderReviewPage(){
+  const box = document.getElementById('reviewListBox');
+  box.innerHTML = '';
+  activeBank.questions.forEach((q, idx)=>{
+    const rec = answerRecord[idx];
+    const div = document.createElement('div');
+    div.className = 'review-item';
+    if(rec.isCorrect === true) div.classList.add('green');
+    else if(rec.isCorrect === false) div.classList.add('red');
+    else div.classList.add('yellow');
+    div.innerHTML = `<span>第${idx+1}题｜${q.type}</span> <span>${rec.isCorrect===true ? '答对' : rec.isCorrect===false ? '答错' : '未作答'}</span>`;
+    div.onclick = ()=>{
+      currentIdx = idx;
+      document.getElementById('reviewWrap').style.display='none';
+      document.getElementById('quizWrap').style.display='block';
+      renderQuestion();
+    }
+    box.appendChild(div);
+  })
+}
+
+//返回刷题页面
+document.getElementById('backQuizBtn').onclick = ()=>{
+  document.getElementById('reviewWrap').style.display='none';
+  document.getElementById('quizWrap').style.display='block';
+}
+
+//最终提交，结算成绩
+document.getElementById('finalSubmitBtn').onclick = ()=>{
+  clearInterval(timerInterval);
+  let score = 0;
+  let right=0, wrong=0, empty=0;
+  answerRecord.forEach(r=>{
+    if(r.isCorrect === true){score++; right++;}
+    else if(r.isCorrect === false) wrong++;
+    else empty++;
+  })
+  const totalTime = Math.floor((Date.now() - timerStart)/1000);
+  const min = String(Math.floor(totalTime/60)).padStart(2,'0');
+  const sec = String(totalTime%60).padStart(2,'0');
+  const total = activeBank.questions.length;
+  const rate = ((right/total)*100).toFixed(1);
+
+  document.getElementById('reviewWrap').style.display='none';
+  document.getElementById('scoreWrap').style.display='block';
+  document.getElementById('scoreInfoBox').innerHTML = `
+  总分：${score} 分（每题1分，共${total}题）<br>
+  ✅答对：${right}题<br>
+  ❌答错：${wrong}题<br>
+  🟡漏选未答：${empty}题<br>
+  ⏱️本次用时：${min}分${sec}秒<br>
+  📊正确率：${rate}%
+  `
+}
+
+document.getElementById('restartBankBtn').onclick = ()=>{
+  startQuiz(bankList.indexOf(activeBank));
+}
+document.getElementById('backHomeBtn').onclick = ()=>{
+  document.getElementById('scoreWrap').style.display='none';
+  if(timerInterval) clearInterval(timerInterval);
+  renderBankList();
+}
+
+renderBankList();
+</script>
+</body>
+</html>
