@@ -2,7 +2,6 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 移动端适配，禁止双击缩放 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BAI营销认证刷题工具</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -15,7 +14,7 @@
         }
         body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #ffffff;
+            background-color: #f5f6f7;
             padding: 12px;
             max-width: 1020px;
             margin: 0 auto;
@@ -50,7 +49,6 @@
             border-radius: 8px;
             font-size: clamp(13px,2.5vw,14px);
             cursor: pointer;
-            /*手机增大点击热区 */
             min-height:40px;
         }
         .btn-blue {
@@ -58,8 +56,8 @@
             color: white;
         }
         .btn-gray {
-            background: #949ca6;
-            color: white;
+            background: #e9e9eb;
+            color: #333;
         }
         .tip-text {
             font-size: 12px;
@@ -85,13 +83,12 @@
         .quiz-item:active {
             background: #f0f7ff;
         }
-        /*刷题页面样式，手机适配 */
         .question-title {
             font-size: clamp(15px,3vw,17px);
             font-weight: 500;
             margin-bottom: 16px;
             line-height: 1.6;
-            word-break: break‑all;
+            word-break: break-all;
         }
         .option-item {
             border: 1px solid #dde1e7;
@@ -100,118 +97,112 @@
             margin: 10px 0;
             box-shadow: 0 1px 3px rgba(0,0,0,0.03);
             cursor:pointer;
-            min‑height:44px;
+            min-height:44px;
         }
         .option-item.selected {
-            border‑color: #2b7bdd;
+            border-color: #2b7bdd;
             background: #edf4fc;
         }
-        .control‑bar {
+        .control-bar {
             display: flex;
-            justify‑content: space‑between;
-            flex‑wrap: wrap;
+            justify-content: space-between;
+            flex-wrap: wrap;
             gap: 10px;
             margin: 18px 0;
         }
-        .analysis‑block {
+        .analysis-block {
             background: #f7f8fa;
             padding: clamp(12px,3vw,14px);
-            border‑radius: 10px;
-            margin‑top: 14px;
+            border-radius: 10px;
+            margin-top: 14px;
         }
         .hide {
             display: none !important;
         }
-        /* 答题结果提示块 */
-        .result‑correct {
-            background‑color: #dcfce7;
+        .result-correct {
+            background-color: #dcfce7;
             color: #166534;
             padding: 12px;
-            border‑radius: 10px;
+            border-radius: 10px;
             margin: 12px 0;
         }
-        .result‑wrong {
-            background‑color: #fee2e2;
+        .result-wrong {
+            background-color: #fee2e2;
             color: #991b1b;
             padding: 12px;
-            border‑radius: 10px;
+            border-radius: 10px;
             margin: 12px 0;
         }
-        /* 进度条样式 */
-        .progress‑wrap {
+        .progress-wrap {
             width: 100%;
             height: 8px;
             background: #e5e7eb;
-            border‑radius: 999px;
+            border-radius: 999px;
             overflow: hidden;
             margin: 8px 0 16px;
         }
-        .progress‑bar {
+        .progress-bar {
             height: 100%;
             background: #2b7bdd;
-            border‑radius: 999px;
+            border-radius: 999px;
         }
     </style>
 </head>
 <body>
-<div id="page‑home">
+<div id="page-home">
     <h1>BAI中级认证刷题工具（Excel拖拽导入）</h1>
-    <div class="drop‑area" id="dropZone">
+    <div class="drop-area" id="dropZone">
         <p>📂 将Excel(.xlsx)拖拽到此区域</p>
-        <p style="font‑size:12px;color:#777;margin‑top:4px">或者点击下方按钮选择文件</p>
+        <p style="font-size:12px;color:#777;margin-top:4px">或者点击下方按钮选择文件</p>
     </div>
-    <div class="btn‑group">
-        <button class="btn‑blue" id="selectFileBtn">选择Excel文件</button>
-        <button class="btn‑gray" id="clearAllBtn">清空全部本地题库</button>
+    <div class="btn-group">
+        <button class="btn-blue" id="selectFileBtn">选择Excel文件</button>
+        <button class="btn-gray" id="clearAllBtn">清空全部本地题库</button>
     </div>
-    <div class="tip‑text">Excel表头: 题库名称 | 题型 | 题干 | 选项A | 选项B | 选项C | 选项D | 正确答案 | 解析</div>
-    <div class="box‑card">
+    <div class="tip-text">Excel表头: 题库名称 | 题型 | 题干 | 选项A | 选项B | 选项C | 选项D | 正确答案 | 解析</div>
+    <div class="box-card">
         <div><b>已导入题库列表（点击开始刷题）</b></div>
-        <div style="font‑size:12px;color:#777;margin‑bottom:8px">暂无题库，请拖拽/选择Excel文件导入</div>
+        <div style="font-size:12px;color:#777;margin-bottom:8px">暂无题库，请拖拽/选择Excel文件导入</div>
         <div id="libList"></div>
     </div>
 </div>
-<div id="page‑quiz" class="hide">
-    <div style="display:flex;justify‑content:space‑between;margin‑bottom:10px">
+<div id="page-quiz" class="hide">
+    <div style="display:flex;justify-content:space-between;margin-bottom:10px">
         <span id="libNameShow"></span>
         <span id="countShow"></span>
     </div>
-    <!-- 进度条 -->
-    <div class="progress‑wrap">
-        <div class="progress‑bar" id="progressBar" style="width:0%"></div>
+    <div class="progress-wrap">
+        <div class="progress-bar" id="progressBar" style="width:0%"></div>
     </div>
-    <div id="questionBox" class="box‑card">
-        <div class="question‑title" id="qTitle"></div>
+    <div id="questionBox" class="box-card">
+        <div class="question-title" id="qTitle"></div>
         <div id="optionWrap"></div>
-        <div class="control‑bar">
-            <button class="btn‑gray" id="prevBtn">上一题</button>
-            <button class="btn‑blue" id="submitBtn">提交答案</button>
-            <button class="btn‑gray" id="nextBtn">下一题</button>
+        <div class="control-bar">
+            <button class="btn-gray" id="prevBtn">上一题</button>
+            <button class="btn-blue" id="submitBtn">提交答案</button>
+            <button class="btn-gray" id="nextBtn">下一题</button>
         </div>
-        <div id="ansAnalysis" class="analysis‑block hide"></div>
+        <div id="ansAnalysis" class="analysis-block hide"></div>
     </div>
-    <div style="margin‑top:20px">
-        <button class="btn‑gray" id="backHomeBtn">返回题库列表</button>
+    <div style="margin-top:20px">
+        <button class="btn-gray" id="backHomeBtn">返回题库列表</button>
     </div>
 </div>
 <input type="file" id="fileInput" accept=".xlsx,.xls" hidden>
 <script>
-// 本地存储key
 const STORAGE_KEY = "bai_quiz_libs";
 let currentLib = null;
 let currentIndex = 0;
 let quizData = [];
-// dom
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
 const selectFileBtn = document.getElementById('selectFileBtn');
 const libListDom = document.getElementById('libList');
 const clearAllBtn = document.getElementById('clearAllBtn');
-const pageHome = document.getElementById("page‑home");
-const pageQuiz = document.getElementById("page‑quiz");
-// 初始化渲染题库列表
+const pageHome = document.getElementById("page-home");
+const pageQuiz = document.getElementById("page-quiz");
 renderLibList();
-//拖拽
+
 dropZone.addEventListener('dragover',e=>{
     e.preventDefault();
     dropZone.classList.add('active');
@@ -231,7 +222,7 @@ fileInput.onchange = (e)=>{
     if(f) handleExcelFile(f);
     fileInput.value = "";
 }
-//解析excel
+
 function handleExcelFile(file){
     const reader = new FileReader();
     reader.onload = function(e){
@@ -243,7 +234,6 @@ function handleExcelFile(file){
             alert("表格读取为空，请确认Excel内容");
             return;
         }
-        //表头校验
         const first = jsonArr[0];
         const needKeys = ["题库名称","题型","题干","选项A","选项B","选项C","选项D","正确答案","解析"];
         const realKeys = Object.keys(first);
@@ -255,7 +245,6 @@ function handleExcelFile(file){
             alert("表头格式不对！必须严格：题库名称|题型|题干|选项A|选项B|选项C|选项D|正确答案|解析");
             return;
         }
-        //分组
         const map = {};
         jsonArr.forEach(row=>{
             const name = row["题库名称"];
@@ -267,7 +256,6 @@ function handleExcelFile(file){
             alert("没有读取到有效题库");
             return;
         }
-        //存入localStorage
         let libs = JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
         for(let libName in map){
             const idx = libs.findIndex(x=>x.name === libName);
@@ -283,29 +271,30 @@ function handleExcelFile(file){
     }
     reader.readAsArrayBuffer(file);
 }
-//渲染题库列表
+
 function renderLibList(){
     const libs = JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
     libListDom.innerHTML = '';
     if(libs.length===0){
-        libListDom.innerHTML = `<div style="color:#777;font‑size:12px">暂无题库，请拖拽/选择Excel文件导入</div>`;
+        libListDom.innerHTML = `<div style="color:#777;font-size:12px">暂无题库，请拖拽/选择Excel文件导入</div>`;
         return;
     }
     libs.forEach(lib=>{
         const div = document.createElement('div');
-        div.className = "quiz‑item";
+        div.className = "quiz-item";
         div.innerHTML = `<div><b>${lib.name}</b> <span style="color:#666">共${lib.list.length}题</span></div>`;
         div.onclick = ()=> startQuiz(lib);
         libListDom.appendChild(div);
     })
 }
+
 clearAllBtn.onclick = ()=>{
     if(confirm("确认清空全部本地题库？")){
         localStorage.removeItem(STORAGE_KEY);
         renderLibList();
     }
 }
-//开始刷题
+
 function startQuiz(libObj){
     currentLib = libObj;
     quizData = libObj.list;
@@ -315,10 +304,10 @@ function startQuiz(libObj){
     document.getElementById('libNameShow').innerText = libObj.name;
     renderQuestion();
 }
+
 function renderQuestion(){
     const item = quizData[currentIndex];
     document.getElementById('countShow').innerText = `${currentIndex+1}/${quizData.length}`;
-    //更新进度条百分比
     const percent = ((currentIndex+1)/quizData.length)*100;
     document.getElementById("progressBar").style.width = `${percent}%`;
 
@@ -329,7 +318,7 @@ function renderQuestion(){
         const val = item[`选项${lab}`];
         if(!val) return;
         const div = document.createElement('div');
-        div.className = "option‑item";
+        div.className = "option-item";
         div.innerText = `${lab}. ${val}`;
         div.dataset.label = lab;
         div.onclick = ()=>{
@@ -339,31 +328,32 @@ function renderQuestion(){
     })
     document.getElementById("ansAnalysis").classList.add("hide");
 }
+
 document.getElementById("prevBtn").onclick = ()=>{
     if(currentIndex>0){
-        currentIndex‑‑;
+        currentIndex--;
         renderQuestion();
     }
 }
 document.getElementById("nextBtn").onclick = ()=>{
-    if(currentIndex < quizData.length‑1){
+    if(currentIndex < quizData.length-1){
         currentIndex++;
         renderQuestion();
     }
 }
 document.getElementById("submitBtn").onclick = function(){
-    const sel = Array.from(document.querySelectorAll(".option‑item.selected")).map(d=>d.dataset.label).sort().join("");
+    const sel = Array.from(document.querySelectorAll(".option-item.selected")).map(d=>d.dataset.label).sort().join("");
     const realAns = quizData[currentIndex]["正确答案"].trim();
     const analysisDom = document.getElementById("ansAnalysis");
     analysisDom.classList.remove("hide");
     let resHtml = "";
     if(sel === realAns){
-        resHtml = `<div class="result‑correct">✅回答正确！</div>`;
+        resHtml = `<div class="result-correct">✅回答正确！</div>`;
     }else{
-        resHtml = `<div class="result‑wrong">❌回答错误，正确答案：${realAns}</div>`;
+        resHtml = `<div class="result-wrong">❌回答错误，正确答案：${realAns}</div>`;
     }
     const jx = quizData[currentIndex]["解析"] || "无解析";
-    analysisDom.innerHTML = `${resHtml}<div style="margin‑top:8px">解析：${jx}</div>`;
+    analysisDom.innerHTML = `${resHtml}<div style="margin-top:8px">解析：${jx}</div>`;
 }
 document.getElementById("backHomeBtn").onclick = ()=>{
     pageQuiz.classList.add("hide");
